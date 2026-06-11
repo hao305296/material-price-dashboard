@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大宗材料公開行情趨勢</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #d9e0ea;
+      --blue: #2364aa;
+      --red: #bf4b34;
+      --green: #2f8a5b;
+      --amber: #9a6a17;
+      --shadow: 0 10px 26px rgba(16, 24, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button, select, input { font: inherit; }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner,
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      padding: 24px 0 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(25px, 3.2vw, 38px);
+      letter-spacing: 0;
+    }
+
+    .subtitle,
+    .meta,
+    .panel-note,
+    .small-note {
+      color: var(--muted);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 15px;
+      max-width: 820px;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    main {
+      padding: 22px 0 42px;
+    }
+
+    .notice {
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid #e3c878;
+      border-left: 5px solid var(--amber);
+      border-radius: 8px;
+      background: #fff9e8;
+      color: #4f3b11;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .control {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+    }
+
+    .control span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .control label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    select {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      min-width: 92px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 16px;
+      min-height: 148px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .card-title,
+    h2 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .tag {
+      min-width: 52px;
+      text-align: center;
+      color: #fff;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      background: #576575;
+    }
+
+    .tag.down { background: var(--green); }
+    .tag.up { background: var(--red); }
+
+    .price {
+      font-size: clamp(28px, 3.2vw, 38px);
+      font-weight: 850;
+    }
+
+    .delta {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .delta.down { color: var(--green); }
+    .delta.up { color: var(--red); }
+    .delta.flat { color: #52616f; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-head {
+      margin-bottom: 12px;
+    }
+
+    .panel-note {
+      margin: 4px 0 0;
+      font-size: 13px;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      height: 410px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .brief-list,
+    .source-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .brief-list li {
+      border-left: 4px solid var(--line);
+      padding-left: 12px;
+      color: #2d3744;
+    }
+
+    .brief-list strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .source-list a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .source-list a:hover {
+      text-decoration: underline;
+    }
+
+    .table-panel {
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f1f4f8;
+      color: #344054;
+      font-weight: 800;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 920px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar-inner,
+      main {
+        width: min(100% - 24px, 1180px);
+      }
+
+      .topbar-inner {
+        grid-template-columns: 1fr;
+        align-items: start;
+        padding: 18px 0 14px;
+      }
+
+      .meta {
+        text-align: left;
+      }
+
+      main {
+        padding-top: 14px;
+      }
+
+      .control {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .control label {
+        flex: 0 0 auto;
+      }
+
+      .panel,
+      .card {
+        padding: 14px;
+      }
+
+      .chart-wrap {
+        height: 320px;
+      }
+
+      th, td {
+        padding: 9px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1>大宗材料公開行情趨勢</h1>
+        <p class="subtitle">依公開來源整理鋼品價格走勢，提供一般市場觀察。此頁僅呈現公開行情與趨勢摘要。</p>
+      </div>
+      <div class="meta">
+        資料整理日：<strong id="asOf"></strong><br>
+        最新鋼品報價日：<strong id="quoteDate"></strong>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="notice">
+      本頁為外部分享版，僅供市場趨勢參考。價格會因地區、規格、數量、交期、運費與交易條件不同而變動，實際交易仍應以正式報價文件為準。
+    </section>
+
+    <section class="toolbar" aria-label="圖表控制">
+      <div class="control">
+        <span>期間</span>
+        <select id="rangeSelect" aria-label="選擇期間">
+          <option value="all">全部</option>
+          <option value="8">近 8 週</option>
+          <option value="4">近 4 週</option>
+        </select>
+      </div>
+      <div class="control">
+        <label><input type="checkbox" class="series-toggle" value="scrap" checked>廢鋼</label>
+        <label><input type="checkbox" class="series-toggle" value="rebar" checked>鋼筋</label>
+        <label><input type="checkbox" class="series-toggle" value="section" checked>型鋼</label>
+      </div>
+      <div class="control">
+        <label><input type="checkbox" id="trendToggle" checked>顯示趨勢線</label>
+      </div>
+    </section>
+
+    <section class="summary-grid" id="summaryGrid" aria-label="最新價格摘要"></section>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>週價格走勢</h2>
+          <p class="panel-note">單位：元/噸。虛線為目前選取期間的線性趨勢線。</p>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="priceChart" aria-label="大宗材料價格趨勢圖"></canvas>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <aside class="side-stack">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>市場觀察</h2>
+            <p class="panel-note">以下為依價格序列計算的公開趨勢摘要，不涉及內部採購判斷。</p>
+          </div>
+          <ul class="brief-list" id="marketBrief"></ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>資料來源</h2>
+            <p class="panel-note">外部分享時建議保留來源連結與資料日期。</p>
+          </div>
+          <ul class="source-list">
+            <li><a href="https://www.juyi-steel.tw/steel-price-trends.html" target="_blank" rel="noreferrer">聚益鋼鐵價格趨勢</a><div class="small-note">鋼品週價格序列參考。</div></li>
+            <li><a href="https://www.double-steel.com/zh/news" target="_blank" rel="noreferrer">雙鋼鋼鐵市場訊息</a><div class="small-note">市場訊息與價格變動參考。</div></li>
+            <li><a href="https://www.arcnet.org.tw/system/articals/files/000/001/290/original/115.01.16%E5%B8%82%E5%A0%B4%E8%B3%87%E8%A8%8A115%E5%B9%B4Q1%E5%B7%A5%E7%A8%8B%E5%B8%82%E5%A0%B4%E8%A1%8C%E6%83%85%E8%A1%A8.pdf" target="_blank" rel="noreferrer">工程市場行情表</a><div class="small-note">混凝土、水泥等工程材料行情參考。</div></li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="panel-head">
+        <h2>價格明細</h2>
+        <p class="panel-note">保留公開價格時間序列，方便查核資料基準。</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>廢鋼</th>
+              <th>廢鋼週變動</th>
+              <th>鋼筋</th>
+              <th>鋼筋週變動</th>
+              <th>型鋼</th>
+              <th>型鋼週變動</th>
+            </tr>
+          </thead>
+          <tbody id="priceRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer-note">外部版僅保留公開來源行情、趨勢摘要與資料日期，不呈現公司內部成本、專案條件或非公開交易資訊。</p>
+  </main>
+
+  <script>
+    const data = {
+      asOf: "2026-06-11",
+      latestSteelQuoteDate: "2026-06-08",
+      series: {
+        scrap: { label: "廢鋼", color: "#2364aa", unit: "元/噸" },
+        rebar: { label: "鋼筋", color: "#bf4b34", unit: "元/噸" },
+        section: { label: "型鋼", color: "#2f8a5b", unit: "元/噸" }
+      },
+      steelWeekly: [
+        { date: "2026/04/07", scrap: 9800, rebar: 18700, section: 24500 },
+        { date: "2026/04/13", scrap: 10100, rebar: 18900, section: 24500 },
+        { date: "2026/04/20", scrap: 10100, rebar: 18900, section: 24500 },
+        { date: "2026/04/27", scrap: 10100, rebar: 18900, section: 24500 },
+        { date: "2026/05/04", scrap: 10100, rebar: 18900, section: 24500 },
+        { date: "2026/05/11", scrap: 10100, rebar: 18900, section: 25000 },
+        { date: "2026/05/18", scrap: 10300, rebar: 19100, section: 25000 },
+        { date: "2026/05/25", scrap: 10300, rebar: 18900, section: 25000 },
+        { date: "2026/06/01", scrap: 10100, rebar: 18700, section: 25000 },
+        { date: "2026/06/08", scrap: 9900, rebar: 18400, section: 25000 }
+      ]
+    };
+
+    const state = {
+      activeSeries: new Set(["scrap", "rebar", "section"]),
+      range: "all",
+      showTrend: true
+    };
+
+    const currency = new Intl.NumberFormat("zh-TW");
+    const canvas = document.getElementById("priceChart");
+    const ctx = canvas.getContext("2d");
+
+    document.getElementById("asOf").textContent = data.asOf;
+    document.getElementById("quoteDate").textContent = data.latestSteelQuoteDate;
+
+    document.getElementById("rangeSelect").addEventListener("change", (event) => {
+      state.range = event.target.value;
+      render();
+    });
+
+    document.querySelectorAll(".series-toggle").forEach((input) => {
+      input.addEventListener("change", (event) => {
+        if (event.target.checked) state.activeSeries.add(event.target.value);
+        else state.activeSeries.delete(event.target.value);
+        if (!state.activeSeries.size) {
+          state.activeSeries.add(event.target.value);
+          event.target.checked = true;
+        }
+        render();
+      });
+    });
+
+    document.getElementById("trendToggle").addEventListener("change", (event) => {
+      state.showTrend = event.target.checked;
+      render();
+    });
+
+    window.addEventListener("resize", () => drawChart(getVisibleRows()));
+
+    function getVisibleRows() {
+      if (state.range === "all") return data.steelWeekly;
+      return data.steelWeekly.slice(-Number(state.range));
+    }
+
+    function formatDelta(value) {
+      if (value > 0) return `+${currency.format(value)}`;
+      if (value < 0) return currency.format(value);
+      return "0";
+    }
+
+    function deltaClass(value) {
+      if (value > 0) return "up";
+      if (value < 0) return "down";
+      return "flat";
+    }
+
+    function getStats(key, rows = data.steelWeekly) {
+      const first = rows[0][key];
+      const latest = rows[rows.length - 1][key];
+      const previous = rows.length > 1 ? rows[rows.length - 2][key] : latest;
+      const periodDelta = latest - first;
+      const wow = latest - previous;
+      const pct = first ? periodDelta / first * 100 : 0;
+      const direction = periodDelta > 0 ? "上升" : periodDelta < 0 ? "下降" : "持平";
+      return { first, latest, previous, periodDelta, wow, pct, direction };
+    }
+
+    function renderSummary() {
+      const grid = document.getElementById("summaryGrid");
+      grid.innerHTML = "";
+      Object.keys(data.series).forEach((key) => {
+        const meta = data.series[key];
+        const stats = getStats(key);
+        const tagClass = deltaClass(stats.wow);
+        const tag = stats.wow < 0 ? "下跌" : stats.wow > 0 ? "上漲" : "持平";
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-head">
+            <h2 class="card-title">${meta.label}</h2>
+            <span class="tag ${tagClass}">${tag}</span>
+          </div>
+          <div>
+            <div class="price">${currency.format(stats.latest)}</div>
+            <div class="small-note">${meta.unit}</div>
+          </div>
+          <div class="delta ${tagClass}">週變動 ${formatDelta(stats.wow)} ${meta.unit}</div>
+          <div class="small-note">期間變動 ${formatDelta(stats.periodDelta)}，${stats.pct.toFixed(1)}%</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function drawChart(rows) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(320, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(260, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const width = rect.width;
+      const height = rect.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const keys = Object.keys(data.series).filter((key) => state.activeSeries.has(key));
+      const values = rows.flatMap((row) => keys.map((key) => row[key]));
+      const min = Math.floor((Math.min(...values) - 300) / 500) * 500;
+      const max = Math.ceil((Math.max(...values) + 300) / 500) * 500;
+      const pad = { top: 24, right: 24, bottom: 54, left: 70 };
+      const chartW = width - pad.left - pad.right;
+      const chartH = height - pad.top - pad.bottom;
+
+      const x = (index) => pad.left + (rows.length === 1 ? chartW / 2 : index / (rows.length - 1) * chartW);
+      const y = (value) => pad.top + (max - value) / (max - min) * chartH;
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#d9e0ea";
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px Microsoft JhengHei, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= 5; i++) {
+        const value = min + (max - min) / 5 * i;
+        const gy = y(value);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, gy);
+        ctx.lineTo(width - pad.right, gy);
+        ctx.stroke();
+        ctx.fillText(currency.format(Math.round(value)), pad.left - 8, gy);
+      }
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      rows.forEach((row, index) => {
+        ctx.fillText(row.date.slice(5), x(index), height - pad.bottom + 18);
+      });
+
+      keys.forEach((key) => {
+        const meta = data.series[key];
+        ctx.strokeStyle = meta.color;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        rows.forEach((row, index) => {
+          const px = x(index);
+          const py = y(row[key]);
+          if (index === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        rows.forEach((row, index) => {
+          ctx.beginPath();
+          ctx.fillStyle = "#fff";
+          ctx.strokeStyle = meta.color;
+          ctx.lineWidth = 2;
+          ctx.arc(x(index), y(row[key]), 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        if (state.showTrend && rows.length > 1) {
+          const trend = linearTrend(rows.map((row) => row[key]));
+          ctx.strokeStyle = meta.color;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([7, 6]);
+          ctx.beginPath();
+          ctx.moveTo(x(0), y(trend(0)));
+          ctx.lineTo(x(rows.length - 1), y(trend(rows.length - 1)));
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+
+      ctx.strokeStyle = "#9aa4b2";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, height - pad.bottom);
+      ctx.lineTo(width - pad.right, height - pad.bottom);
+      ctx.stroke();
+    }
+
+    function linearTrend(values) {
+      const n = values.length;
+      const sumX = values.reduce((sum, _, index) => sum + index, 0);
+      const sumY = values.reduce((sum, value) => sum + value, 0);
+      const sumXY = values.reduce((sum, value, index) => sum + index * value, 0);
+      const sumXX = values.reduce((sum, _, index) => sum + index * index, 0);
+      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX || 1);
+      const intercept = (sumY - slope * sumX) / n;
+      return (xValue) => intercept + slope * xValue;
+    }
+
+    function renderLegend() {
+      const legend = document.getElementById("legend");
+      legend.innerHTML = "";
+      Object.entries(data.series).forEach(([key, meta]) => {
+        if (!state.activeSeries.has(key)) return;
+        const item = document.createElement("span");
+        item.className = "legend-item";
+        item.innerHTML = `<span class="swatch" style="background:${meta.color}"></span>${meta.label}`;
+        legend.appendChild(item);
+      });
+    }
+
+    function renderMarketBrief(rows) {
+      const brief = document.getElementById("marketBrief");
+      brief.innerHTML = Object.keys(data.series).map((key) => {
+        const meta = data.series[key];
+        const stats = getStats(key, rows);
+        const text = stats.direction === "下降"
+          ? "短期價格走弱，後續需觀察原料成本、需求量與供應端報價是否延續。"
+          : stats.direction === "上升"
+            ? "短期價格走升，後續需觀察原料、能源、運費與需求回升因素。"
+            : "短期價格持平，後續仍需追蹤下一次公開報價與市場成交狀況。";
+        return `<li><strong>${meta.label}：${stats.direction} ${formatDelta(stats.periodDelta)} 元/噸</strong>${text}</li>`;
+      }).join("");
+    }
+
+    function renderTable() {
+      const rows = document.getElementById("priceRows");
+      rows.innerHTML = data.steelWeekly.map((row, index, all) => {
+        const prev = index > 0 ? all[index - 1] : row;
+        return `
+          <tr>
+            <td>${row.date}</td>
+            <td>${currency.format(row.scrap)}</td>
+            <td class="${deltaClass(row.scrap - prev.scrap)}">${formatDelta(row.scrap - prev.scrap)}</td>
+            <td>${currency.format(row.rebar)}</td>
+            <td class="${deltaClass(row.rebar - prev.rebar)}">${formatDelta(row.rebar - prev.rebar)}</td>
+            <td>${currency.format(row.section)}</td>
+            <td class="${deltaClass(row.section - prev.section)}">${formatDelta(row.section - prev.section)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function render() {
+      const rows = getVisibleRows();
+      renderSummary();
+      drawChart(rows);
+      renderLegend();
+      renderMarketBrief(rows);
+      renderTable();
+    }
+
+    render();
+  </script>
+</body>
+</html>
