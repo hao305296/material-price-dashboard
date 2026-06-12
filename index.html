@@ -136,6 +136,40 @@
       margin-bottom: 18px;
     }
 
+    .metal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .metal-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: #fbfcfe;
+      min-height: 132px;
+    }
+
+    .metal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .metal-name {
+      font-weight: 850;
+      font-size: 16px;
+    }
+
+    .metal-price {
+      font-size: 22px;
+      font-weight: 850;
+      margin-bottom: 3px;
+    }
+
     .card,
     .panel {
       background: var(--panel);
@@ -339,6 +373,10 @@
         grid-template-columns: 1fr;
       }
 
+      .metal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .layout {
         grid-template-columns: 1fr;
       }
@@ -380,6 +418,10 @@
 
       .chart-wrap {
         height: 320px;
+      }
+
+      .metal-grid {
+        grid-template-columns: 1fr;
       }
 
       th, td {
@@ -428,6 +470,14 @@
 
     <section class="summary-grid" id="summaryGrid" aria-label="最新價格摘要"></section>
 
+    <section class="panel table-panel">
+      <div class="panel-head">
+        <h2>土木常用非鐵金屬</h2>
+        <p class="panel-note">國際商品行情，單位依公開來源標示。銅以 USD/lb 報價，其餘多為 USD/T；實際採購仍需換算匯率、加工費、運費與規格差異。</p>
+      </div>
+      <div class="metal-grid" id="nonFerrousGrid"></div>
+    </section>
+
     <section class="layout">
       <div class="panel">
         <div class="panel-head">
@@ -458,6 +508,7 @@
             <li><a href="https://www.juyi-steel.tw/steel-price-trends.html" target="_blank" rel="noreferrer">聚益鋼鐵價格趨勢</a><div class="small-note">鋼品週價格序列參考。</div></li>
             <li><a href="https://www.double-steel.com/zh/news" target="_blank" rel="noreferrer">雙鋼鋼鐵市場訊息</a><div class="small-note">市場訊息與價格變動參考。</div></li>
             <li><a href="https://www.arcnet.org.tw/system/articals/files/000/001/290/original/115.01.16%E5%B8%82%E5%A0%B4%E8%B3%87%E8%A8%8A115%E5%B9%B4Q1%E5%B7%A5%E7%A8%8B%E5%B8%82%E5%A0%B4%E8%A1%8C%E6%83%85%E8%A1%A8.pdf" target="_blank" rel="noreferrer">工程市場行情表</a><div class="small-note">混凝土、水泥等工程材料行情參考。</div></li>
+            <li><a href="https://tradingeconomics.com/commodities" target="_blank" rel="noreferrer">Trading Economics Commodities</a><div class="small-note">銅、鋁、鋅、鎳、鉛、錫等非鐵金屬行情參考。</div></li>
           </ul>
         </div>
       </aside>
@@ -509,6 +560,14 @@
         { date: "2026/05/25", scrap: 10300, rebar: 18900, section: 25000 },
         { date: "2026/06/01", scrap: 10100, rebar: 18700, section: 25000 },
         { date: "2026/06/08", scrap: 9900, rebar: 18400, section: 25000 }
+      ],
+      nonFerrous: [
+        { name: "銅", english: "Copper", price: 6.3725, unit: "USD/lb", day: 1.81, weekly: 1.74, monthly: -3.96, date: "2026/06/12", use: "電線電纜、接地、給排水與機電設備。" },
+        { name: "鋁", english: "Aluminum", price: 3518.48, unit: "USD/T", day: 1.24, weekly: -4.07, monthly: -1.59, date: "2026/06/11", use: "帷幕牆、門窗、鋁模板、支架與輕量構件。" },
+        { name: "鋅", english: "Zinc", price: 3525.80, unit: "USD/T", day: 0.90, weekly: -0.01, monthly: -0.94, date: "2026/06/12", use: "鍍鋅鋼材、防蝕塗層、五金與金屬配件。" },
+        { name: "鎳", english: "Nickel", price: 17779, unit: "USD/T", day: -0.62, weekly: -4.29, monthly: -7.23, date: "2026/06/12", use: "不鏽鋼、耐蝕金屬構件與特殊合金。" },
+        { name: "鉛", english: "Lead", price: 1952.75, unit: "USD/T", day: 0.30, weekly: -2.68, monthly: -2.88, date: "2026/06/12", use: "配重、防輻射、隔音材料與部分防水工程。" },
+        { name: "錫", english: "Tin", price: 51960, unit: "USD/T", day: -1.03, weekly: -9.49, monthly: -6.73, date: "2026/06/10", use: "焊料、金屬鍍層、機電零件與特殊五金。" }
       ]
     };
 
@@ -731,6 +790,28 @@
       }).join("");
     }
 
+    function renderNonFerrous() {
+      const grid = document.getElementById("nonFerrousGrid");
+      grid.innerHTML = data.nonFerrous.map((item) => {
+        const trendClass = deltaClass(item.weekly);
+        const trendText = item.weekly > 0 ? "週漲" : item.weekly < 0 ? "週跌" : "持平";
+        return `
+          <article class="metal-item">
+            <div class="metal-head">
+              <div>
+                <div class="metal-name">${item.name}</div>
+                <div class="small-note">${item.english}｜${item.date}</div>
+              </div>
+              <span class="tag ${trendClass}">${trendText}</span>
+            </div>
+            <div class="metal-price">${currency.format(item.price)}</div>
+            <div class="small-note">${item.unit}｜日變動 ${item.day.toFixed(2)}%｜週變動 ${item.weekly.toFixed(2)}%</div>
+            <div class="small-note">土木用途：${item.use}</div>
+          </article>
+        `;
+      }).join("");
+    }
+
     function renderTable() {
       const rows = document.getElementById("priceRows");
       rows.innerHTML = data.steelWeekly.map((row, index, all) => {
@@ -755,6 +836,7 @@
       drawChart(rows);
       renderLegend();
       renderMarketBrief(rows);
+      renderNonFerrous();
       renderTable();
     }
 
