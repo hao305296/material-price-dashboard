@@ -170,6 +170,63 @@
       margin-bottom: 3px;
     }
 
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .news-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfe;
+      display: grid;
+      gap: 8px;
+    }
+
+    .news-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .news-category {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #edf2f7;
+      color: #344054;
+      font-weight: 700;
+    }
+
+    .news-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .news-item p {
+      margin: 0;
+      color: #344054;
+      font-size: 14px;
+    }
+
+    .news-source {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .news-source:hover {
+      text-decoration: underline;
+    }
+
     .card,
     .panel {
       background: var(--panel);
@@ -377,6 +434,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+
       .layout {
         grid-template-columns: 1fr;
       }
@@ -478,6 +539,14 @@
       <div class="metal-grid" id="nonFerrousGrid"></div>
     </section>
 
+    <section class="panel table-panel">
+      <div class="panel-head">
+        <h2>一週內價格影響新聞</h2>
+        <p class="panel-note">整理近 7 天內可能影響大宗材料價格的公開新聞與行情訊號，分類供價格風險檢核。</p>
+      </div>
+      <div class="news-grid" id="newsGrid"></div>
+    </section>
+
     <section class="layout">
       <div class="panel">
         <div class="panel-head">
@@ -568,6 +637,52 @@
         { name: "鎳", english: "Nickel", price: 17779, unit: "USD/T", day: -0.62, weekly: -4.29, monthly: -7.23, date: "2026/06/12", use: "不鏽鋼、耐蝕金屬構件與特殊合金。" },
         { name: "鉛", english: "Lead", price: 1952.75, unit: "USD/T", day: 0.30, weekly: -2.68, monthly: -2.88, date: "2026/06/12", use: "配重、防輻射、隔音材料與部分防水工程。" },
         { name: "錫", english: "Tin", price: 51960, unit: "USD/T", day: -1.03, weekly: -9.49, monthly: -6.73, date: "2026/06/10", use: "焊料、金屬鍍層、機電零件與特殊五金。" }
+      ],
+      newsWatch: [
+        {
+          category: "能源 / 運輸",
+          date: "2026/06/11",
+          title: "美伊緊張與荷姆茲海峽風險推升油價波動",
+          items: "油價、柴油、瀝青、海運、機具燃料",
+          direction: "偏上行",
+          impact: "若油價維持高檔，瀝青、運費、機具燃料與水泥/預拌混凝土運輸成本容易上修。",
+          action: "短期報價需注意燃料調整、運距假設與瀝青報價有效期。",
+          source: "WSJ / Economic Times",
+          url: "https://www.wsj.com/finance/oil-prices-rise-as-u-s-iran-tensions-escalate-09538415"
+        },
+        {
+          category: "非鐵金屬",
+          date: "2026/06/11",
+          title: "中東衝突、硫酸供應與電力需求使銅、鋁維持高敏感度",
+          items: "銅、鋁、鎳、不鏽鋼、電線電纜",
+          direction: "銅鋁偏強，鎳短線偏弱但波動大",
+          impact: "銅受電網、資料中心與供應缺口支撐；硫酸/硫供應會影響銅與鎳加工成本。",
+          action: "機電、接地、電纜與鋁門窗/帷幕牆報價需保留換價空間。",
+          source: "Financial Times",
+          url: "https://www.ft.com/content/44d4b188-45ed-4e7e-a5eb-278da62ac601"
+        },
+        {
+          category: "即時行情",
+          date: "2026/06/12",
+          title: "銅週漲 1.74%，鎳週跌 4.29%，鋁週跌 4.07%",
+          items: "銅、鋁、鋅、鎳、鉛、錫",
+          direction: "分歧",
+          impact: "非鐵金屬不同步，銅仍偏強，鎳、鋁、錫短線回落；不可只用單一金屬判斷整體趨勢。",
+          action: "分開追蹤電纜用銅、鋁料、不鏽鋼含鎳材料與鍍鋅材料。",
+          source: "Trading Economics",
+          url: "https://tradingeconomics.com/commodities"
+        },
+        {
+          category: "鋼材 / 廢鋼",
+          date: "2026/06/10-12",
+          title: "國際鋼材與廢鋼訊號偏弱，台灣鋼筋近期仍需看本地報價",
+          items: "鋼筋、型鋼、廢鋼、HRC",
+          direction: "短期偏弱或盤整",
+          impact: "國際鋼材與廢鋼未明顯轉強，與目前本地鋼筋週跌、型鋼持平的方向大致一致。",
+          action: "仍需以正式盤價、供應商報價與交期為準。",
+          source: "Trading Economics / 本地鋼品價格序列",
+          url: "https://tradingeconomics.com/commodities"
+        }
       ]
     };
 
@@ -812,6 +927,24 @@
       }).join("");
     }
 
+    function renderNewsWatch() {
+      const grid = document.getElementById("newsGrid");
+      grid.innerHTML = data.newsWatch.map((item) => `
+        <article class="news-item">
+          <div class="news-meta">
+            <span class="news-category">${item.category}</span>
+            <span>${item.date}</span>
+            <span>方向：${item.direction}</span>
+          </div>
+          <h3 class="news-title">${item.title}</h3>
+          <p><strong>影響品項：</strong>${item.items}</p>
+          <p><strong>可能影響：</strong>${item.impact}</p>
+          <p><strong>觀察重點：</strong>${item.action}</p>
+          <p><a class="news-source" href="${item.url}" target="_blank" rel="noreferrer">${item.source}</a></p>
+        </article>
+      `).join("");
+    }
+
     function renderTable() {
       const rows = document.getElementById("priceRows");
       rows.innerHTML = data.steelWeekly.map((row, index, all) => {
@@ -837,6 +970,7 @@
       renderLegend();
       renderMarketBrief(rows);
       renderNonFerrous();
+      renderNewsWatch();
       renderTable();
     }
 
